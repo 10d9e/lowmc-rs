@@ -1,0 +1,25 @@
+[package]
+name = "lowmc-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["10d9e <jay.logelin@gmail.com>"]
+description = "LowMC block cipher implementation in Rust"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/10d9e/lowmc-rs"
+keywords = ["cryptography", "cipher", "lowmc", "block-cipher"]
+categories = ["cryptography"]
+
+[lib]
+name = "lowmc_rs"
+path = "src/lib.rs"
+
+[[bin]]
+name = "lowmc-rs"
+path = "src/main.rs"
+
+[[example]]
+name = "simple"
+path = "examples/simple.rs"
+
+[dependencies]
+# No external dependencies - pure Rust implementation
