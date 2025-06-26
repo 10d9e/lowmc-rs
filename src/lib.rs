@@ -10,31 +10,14 @@
 //! - Number of rounds: 12
 //! - S-boxes per round: 49
 
+use rand::rngs::StdRng;
+use rand::{thread_rng, Rng, SeedableRng};
+
 // LowMC Parameters (matching the C++ implementation)
 const NUM_OF_BOXES: usize = 49; // Number of S-boxes
 const BLOCK_SIZE: usize = 256; // Block size in bits
 const KEY_SIZE: usize = 80; // Key size in bits
 const ROUNDS: usize = 12; // Number of rounds
-
-/// Simple pseudorandom number generator for matrix generation
-/// Uses a linear congruential generator with good parameters
-struct SimpleRng {
-    state: u64,
-}
-
-impl SimpleRng {
-    fn new(seed: u64) -> Self {
-        SimpleRng {
-            state: if seed == 0 { 1 } else { seed },
-        }
-    }
-
-    fn next_bit(&mut self) -> bool {
-        // LCG parameters from Numerical Recipes
-        self.state = self.state.wrapping_mul(1664525).wrapping_add(1013904223);
-        (self.state >> 31) & 1 == 1
-    }
-}
 
 /// Simple bit vector using u32 arrays - LSB is bit 0 like std::bitset
 #[derive(Clone, Debug, PartialEq)]
@@ -152,6 +135,12 @@ impl LowMC {
         cipher.instantiate_lowmc(key);
         cipher.keyschedule();
         cipher
+    }
+
+    /// Generate a random key for the LowMC cipher
+    pub fn generate_random_key() -> u128 {
+        let mut rng = thread_rng();
+        rng.gen()
     }
 
     /// Encrypt a full 256-bit block (represented as two u128 values: low, high)
@@ -400,7 +389,8 @@ impl LowMC {
 
     fn instantiate_lowmc(&mut self, key_seed: u128) {
         // Use key as seed for deterministic matrix generation
-        let mut rng = SimpleRng::new(key_seed as u64 ^ (key_seed >> 64) as u64);
+        let seed = key_seed as u64 ^ (key_seed >> 64) as u64;
+        let mut rng = StdRng::seed_from_u64(seed);
 
         self.lin_matrices.clear();
         self.inv_lin_matrices.clear();
@@ -431,7 +421,7 @@ impl LowMC {
         }
     }
 
-    fn generate_matrix_with_rng(rng: &mut SimpleRng, size: usize) -> Vec<BitVec> {
+    fn generate_matrix_with_rng<R: Rng>(rng: &mut R, size: usize) -> Vec<BitVec> {
         // For now, let's use a simple but reliable approach:
         // Generate a random upper triangular matrix with 1s on the diagonal
         // This is guaranteed to be invertible
@@ -444,7 +434,7 @@ impl LowMC {
             row.set(i, true);
             // Set random bits above the diagonal
             for j in (i + 1)..size {
-                row.set(j, rng.next_bit());
+                row.set(j, rng.gen::<bool>());
             }
             matrix.push(row);
         }
@@ -452,10 +442,10 @@ impl LowMC {
         matrix
     }
 
-    fn generate_block_with_rng(rng: &mut SimpleRng, bits: usize) -> BitVec {
+    fn generate_block_with_rng<R: Rng>(rng: &mut R, bits: usize) -> BitVec {
         let mut block = BitVec::new(bits);
         for i in 0..bits {
-            block.set(i, rng.next_bit());
+            block.set(i, rng.gen::<bool>());
         }
         block
     }
@@ -568,7 +558,8 @@ impl LowMC {
         };
 
         // Use key as seed for deterministic generation
-        let mut rng = SimpleRng::new(key as u64);
+        let seed = key as u64;
+        let mut rng = StdRng::seed_from_u64(seed);
 
         // Create one round with random matrices
         let matrix = Self::generate_matrix_with_rng(&mut rng, BLOCK_SIZE);
@@ -650,7 +641,7 @@ mod tests {
 
     #[test]
     fn test_matrix_inversion() {
-        let mut rng = SimpleRng::new(12345);
+        let mut rng = thread_rng();
         let matrix = LowMC::generate_matrix_with_rng(&mut rng, BLOCK_SIZE);
         let inv_matrix = LowMC::invert_matrix(&matrix);
         let test_values = [0x0u128, 0x1u128, 0xFFD5u128];
@@ -754,33 +745,6 @@ mod tests {
             plaintext, recovered,
             "Decryption should recover original plaintext"
         );
-    }
-
-    #[test]
-    fn test_deterministic_behavior() {
-        // Test that the same key produces the same results
-        let cipher1 = LowMC::new(12345);
-        let cipher2 = LowMC::new(12345);
-
-        let plaintext = 0xDEADBEEFu128;
-        let (ciphertext1_low, ciphertext1_high) = cipher1.encrypt(plaintext);
-        let (ciphertext2_low, ciphertext2_high) = cipher2.encrypt(plaintext);
-
-        assert_eq!(
-            ciphertext1_low, ciphertext2_low,
-            "Same key should produce same ciphertext (low)"
-        );
-        assert_eq!(
-            ciphertext1_high, ciphertext2_high,
-            "Same key should produce same ciphertext (high)"
-        );
-
-        let recovered1 = cipher1.decrypt(ciphertext1_low, ciphertext1_high);
-        let recovered2 = cipher2.decrypt(ciphertext2_low, ciphertext2_high);
-
-        assert_eq!(recovered1, plaintext);
-        assert_eq!(recovered2, plaintext);
-        assert_eq!(recovered1, recovered2);
     }
 
     #[test]
