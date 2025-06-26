@@ -3,6 +3,23 @@
 [![Crates.io](https://img.shields.io/crates/v/lowmc-rs)](https://crates.io/crates/lowmc-rs)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/10d9e/lowmc-rs/rust.yml?branch=main)](https://github.com/10d9e/lowmc-rs/actions)
 
+## Overview
+
+LowMC is a family of block ciphers designed to minimize the number of AND gates in the circuit representation, making it suitable for applications in multi-party computation, fully homomorphic encryption, and zero-knowledge proofs.
+
+This implementation provides:
+- **Block size**: 256 bits
+- **Key size**: 80 bits  
+- **Rounds**: 12
+- **S-boxes per round**: 49 (3-bit S-boxes)
+- **Identity bits per round**: 109
+
+## Features
+
+- ✅ Complete LowMC implementation following the specification
+- ✅ All core cryptographic components (S-box layer, linear layer, key schedule)
+- ✅ Matrix inversion and rank checking for full-rank matrices
+
 ## LowMC Command-Line Interface (CLI)
 
 ### Build & Install
@@ -54,23 +71,6 @@ lowmc key-info --name mykey
 ```sh
 lowmc --help
 ```
-
-## Overview
-
-LowMC is a family of block ciphers designed to minimize the number of AND gates in the circuit representation, making it suitable for applications in multi-party computation, fully homomorphic encryption, and zero-knowledge proofs.
-
-This implementation provides:
-- **Block size**: 256 bits
-- **Key size**: 80 bits  
-- **Rounds**: 12
-- **S-boxes per round**: 49 (3-bit S-boxes)
-- **Identity bits per round**: 109
-
-## Features
-
-- ✅ Complete LowMC implementation following the specification
-- ✅ All core cryptographic components (S-box layer, linear layer, key schedule)
-- ✅ Matrix inversion and rank checking for full-rank matrices
 
 ## Usage
 
