@@ -1,5 +1,8 @@
 # lowmc-rs
 
+[![Crates.io](https://img.shields.io/crates/v/lowmc-rs)](https://crates.io/crates/lowmc-rs)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/10d9e/lowmc-rs/ci.yml?branch=main)](https://github.com/10d9e/lowmc-rs/actions)
+
 ## LowMC Command-Line Interface (CLI)
 
 ### Build & Install
