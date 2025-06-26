@@ -90,10 +90,10 @@ impl BitVec {
 
     fn to_u128(&self) -> u128 {
         let mut bytes = [0u8; 16];
-        for i in 0..16 {
+        for (i, byte) in bytes.iter_mut().enumerate() {
             for j in 0..8 {
                 if i * 8 + j < self.bits && self.get(i * 8 + j) {
-                    bytes[i] |= 1 << j;
+                    *byte |= 1 << j;
                 }
             }
         }
@@ -455,23 +455,23 @@ impl LowMC {
         let mut augmented = Vec::new();
 
         // Create augmented matrix [A|I]
-        for i in 0..n {
-            let mut row = BitVec::new(2 * n);
+        for (i, row) in matrix.iter().enumerate() {
+            let mut aug_row = BitVec::new(2 * n);
             // Copy original matrix
             for j in 0..n {
-                row.set(j, matrix[i].get(j));
+                aug_row.set(j, row.get(j));
             }
             // Add identity matrix
-            row.set(n + i, true);
-            augmented.push(row);
+            aug_row.set(n + i, true);
+            augmented.push(aug_row);
         }
 
         // Gaussian elimination
         for i in 0..n {
             // Find pivot
             let mut pivot_row = i;
-            for k in i + 1..n {
-                if augmented[k].get(i) {
+            for (k, row) in augmented.iter().enumerate().skip(i + 1) {
+                if row.get(i) {
                     pivot_row = k;
                     break;
                 }
@@ -484,21 +484,21 @@ impl LowMC {
 
             // Eliminate column
             let pivot_row = augmented[i].clone();
-            for j in 0..n {
-                if i != j && augmented[j].get(i) {
-                    augmented[j].xor_assign(&pivot_row);
+            for (j, row) in augmented.iter_mut().enumerate() {
+                if i != j && row.get(i) {
+                    row.xor_assign(&pivot_row);
                 }
             }
         }
 
         // Extract inverse matrix from right half
         let mut inverse = Vec::new();
-        for i in 0..n {
-            let mut row = BitVec::new(n);
+        for row in augmented.iter().take(n) {
+            let mut inv_row = BitVec::new(n);
             for j in 0..n {
-                row.set(j, augmented[i].get(n + j));
+                inv_row.set(j, row.get(n + j));
             }
-            inverse.push(row);
+            inverse.push(inv_row);
         }
 
         inverse

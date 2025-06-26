@@ -505,8 +505,8 @@ fn all_possible_good_trails(
         let mut current_trails = vec![0u128; max_active_sboxes + 1];
 
         // Store the number of good trails after 1 round
-        for active_sboxes in 0..=max_active_sboxes {
-            current_trails[active_sboxes] = one_round_trails(params, active_sboxes);
+        for (active_sboxes, trail) in current_trails.iter_mut().enumerate() {
+            *trail = one_round_trails(params, active_sboxes);
         }
 
         for _ in 2..=rounds {
@@ -823,8 +823,12 @@ fn interpolation_terms(params: &Parameters, rounds: usize) -> u128 {
     }
 
     let mut terms = 0u128;
-    for degree in 0..=(2_usize.pow(rounds as u32).min(params.blocksize)) {
-        terms += keybit_terms[degree].min(terms_with_bounded_degree(
+    for (degree, &val) in keybit_terms
+        .iter()
+        .enumerate()
+        .take(2_usize.pow(rounds as u32).min(params.blocksize) + 1)
+    {
+        terms += val.min(terms_with_bounded_degree(
             params.keysize,
             2_usize.pow(rounds as u32) - degree,
         ));
