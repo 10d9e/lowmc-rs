@@ -1,6 +1,56 @@
 # lowmc-rs
 
-A pure Rust implementation of the LowMC block cipher family.
+## LowMC Command-Line Interface (CLI)
+
+### Build & Install
+
+```sh
+# Build the CLI binary
+cargo build --release --bin lowmc
+
+# Optionally, install to your $HOME/.cargo/bin
+cargo install --path . --bin lowmc
+```
+
+### Usage
+
+#### Generate a new key
+
+```sh
+lowmc generate-key --name mykey
+```
+- Keys are saved in `~/.lowmc/` as `<name>.key`.
+
+#### Encrypt a file
+
+```sh
+lowmc encrypt --key mykey --input plaintext.txt --output ciphertext.txt --format hex
+```
+- Supported formats: `hex`, `base64`, `raw`.
+
+#### Decrypt a file
+
+```sh
+lowmc decrypt --key mykey --input ciphertext.txt --output decrypted.txt --format hex
+```
+
+#### List all keys
+
+```sh
+lowmc list-keys
+```
+
+#### Show key info
+
+```sh
+lowmc key-info --name mykey
+```
+
+#### Help
+
+```sh
+lowmc --help
+```
 
 ## Overview
 

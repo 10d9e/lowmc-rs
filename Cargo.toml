@@ -17,6 +17,10 @@ path = "src/lib.rs"
 name = "lowmc-rs"
 path = "src/main.rs"
 
+[[bin]]
+name = "lowmc"
+path = "src/bin/cli.rs"
+
 [[example]]
 name = "simple"
 path = "examples/simple.rs"
@@ -24,3 +28,5 @@ path = "examples/simple.rs"
 [dependencies]
 # No external dependencies - pure Rust implementation
 rand = "0.8"
+clap = { version = "4.0", features = ["derive"] }
+dirs = "5.0"
